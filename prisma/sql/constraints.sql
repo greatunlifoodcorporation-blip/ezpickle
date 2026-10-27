@@ -13,7 +13,7 @@ ALTER TABLE "Booking"
   ADD CONSTRAINT booking_no_overlap
   EXCLUDE USING gist (
     "courtId" WITH =,
-    tstzrange("startAt", "endAt", '[)') WITH &&
+    tsrange("startAt", "endAt", '[)') WITH &&
   )
   WHERE (status IN ('PENDING', 'PAYMENT_PENDING', 'CONFIRMED', 'CHECKED_IN', 'COMPLETED'));
 
@@ -23,7 +23,7 @@ ALTER TABLE "CourtBlock"
   ADD CONSTRAINT court_block_no_overlap
   EXCLUDE USING gist (
     "courtId" WITH =,
-    tstzrange("startAt", "endAt", '[)') WITH &&
+    tsrange("startAt", "endAt", '[)') WITH &&
   );
 
 -- 3. Sanity: end must be after start.
