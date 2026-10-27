@@ -35,6 +35,8 @@ export default function AdminMediaPage() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
+  const [dragging, setDragging] = useState(false);
+  const [fileError, setFileError] = useState("");
   const [form, setForm] = useState({
     title: "",
     caption: "",
@@ -47,6 +49,13 @@ export default function AdminMediaPage() {
 
   function pickFile(next: File | null) {
     if (preview) URL.revokeObjectURL(preview);
+    setFileError("");
+    if (next && !/^image\/(jpeg|png|webp)$/.test(next.type)) {
+      setFile(null);
+      setPreview("");
+      setFileError("Please choose a JPEG, PNG or WebP image.");
+      return;
+    }
     setFile(next);
     setPreview(next ? URL.createObjectURL(next) : "");
   }
@@ -221,16 +230,33 @@ export default function AdminMediaPage() {
             <button
               type="button"
               onClick={() => fileInput.current?.click()}
-              className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 p-6 text-sm text-white/70 transition hover:border-white/40 hover:text-white"
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                pickFile(e.dataTransfer.files?.[0] ?? null);
+              }}
+              className={`flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 text-sm transition hover:border-white/40 hover:text-white ${
+                dragging ? "border-pickle-500 bg-white/[0.06] text-white" : "border-white/20 text-white/70"
+              }`}
             >
               {preview ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={preview} alt="Preview" className="aspect-video w-full rounded-lg object-cover" />
               ) : (
-                <span>Click to choose an image from your computer</span>
+                <span>Drag &amp; drop a photo here, or click to browse</span>
               )}
-              {file && <span className="text-xs text-white/50">{file.name} — click to change</span>}
+              {file && <span className="text-xs text-white/50">{file.name} — drop or click to change</span>}
             </button>
+            {fileError && (
+              <span role="alert" className="mt-1 block text-xs text-red-400">
+                {fileError}
+              </span>
+            )}
           </Field>
           <Field label="Title">
             <input
