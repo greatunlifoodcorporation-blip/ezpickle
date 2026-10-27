@@ -182,7 +182,8 @@ export const promoSchema = z.object({
 });
 
 export const facilityImageSchema = z.object({
-  url: z.string().url(),
+  // Either a full https URL, or an image uploaded through the admin (/api/files/<id>).
+  url: z.union([z.string().url(), z.string().regex(/^\/api\/files\/[a-z0-9]+$/i)]),
   title: z.string().trim().max(80).optional().nullable(),
   caption: z.string().trim().max(200).optional().nullable(),
   sortOrder: z.number().int().min(0).max(999).default(0),

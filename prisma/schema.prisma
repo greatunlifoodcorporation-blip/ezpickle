@@ -140,6 +140,16 @@ model FacilityImage {
   @@index([active, sortOrder])
 }
 
+/// Images uploaded from the admin Media page. Stored in Postgres so no extra
+/// storage service is needed; served publicly at /api/files/<id>.
+model UploadedFile {
+  id        String   @id @default(cuid())
+  mimeType  String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
 enum BlockReason {
   MAINTENANCE
   PRIVATE_EVENT

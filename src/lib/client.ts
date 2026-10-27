@@ -65,3 +65,59 @@ export function downloadCsv(blob: Blob, filename: string) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+/** Uploads an image Blob to the admin media endpoint and returns its public URL. */
+export async function uploadImage(file: Blob, filename = "photo.jpg"): Promise<string> {
+  const form = new FormData();
+  form.append("file", file, filename);
+
+  const res = await fetch("/api/admin/media/upload", {
+    method: "POST",
+    headers: { "x-csrf-token": csrfToken() },
+    body: form,
+    credentials: "same-origin",
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json?.ok === false) {
+    const error = json?.error ?? {};
+    throw new ApiError(
+      error.message ?? "Upload failed. Please try again.",
+      error.code ?? "error",
+      res.status,
+    );
+  }
+  return json.data.url as string;
+}
+
+/**
+ * Shrinks big phone photos (often 4–10 MB) to a web-friendly JPEG before
+ * upload: longest side 2000px, quality 85%. Falls back to the original file
+ * if the browser cannot decode it.
+ */
+export async function prepareImage(file: File): Promise<{ blob: Blob; name: string }> {
+  const MAX_SIDE = 2000;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("no canvas");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.85),
+    );
+    if (blob && (blob.size < file.size || file.size > 8 * 1024 * 1024)) {
+      return { blob, name: file.name.replace(/\.[^.]+$/, "") + ".jpg" };
+    }
+  } catch {
+    /* fall through to the original file */
+  }
+  return { blob: file, name: file.name };
+}
