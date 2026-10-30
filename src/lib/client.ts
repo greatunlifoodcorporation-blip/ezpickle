@@ -91,30 +91,36 @@ export async function uploadImage(file: Blob, filename = "photo.jpg"): Promise<s
 }
 
 /**
- * Shrinks big phone photos (often 4–10 MB) to a web-friendly JPEG before
- * upload: longest side 2000px, quality 85%. Falls back to the original file
- * if the browser cannot decode it.
+ * Shrinks big images before upload. Photos become web-friendly JPEGs (longest
+ * side 2000px). With { format: "png" } (used for logos) transparency is kept.
+ * Falls back to the original file if the browser cannot decode it.
  */
-export async function prepareImage(file: File): Promise<{ blob: Blob; name: string }> {
-  const MAX_SIDE = 2000;
+export async function prepareImage(
+  file: File,
+  options: { maxSide?: number; format?: "jpeg" | "png" } = {},
+): Promise<{ blob: Blob; name: string }> {
+  const maxSide = options.maxSide ?? 2000;
+  const png = options.format === "png";
   try {
     const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(bitmap.width * scale);
     canvas.height = Math.round(bitmap.height * scale);
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("no canvas");
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (!png) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
     ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     bitmap.close();
 
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", 0.85),
+      canvas.toBlob(resolve, png ? "image/png" : "image/jpeg", 0.85),
     );
-    if (blob && (blob.size < file.size || file.size > 8 * 1024 * 1024)) {
-      return { blob, name: file.name.replace(/\.[^.]+$/, "") + ".jpg" };
+    if (blob && (png || blob.size < file.size || file.size > 8 * 1024 * 1024)) {
+      return { blob, name: file.name.replace(/\.[^.]+$/, "") + (png ? ".png" : ".jpg") };
     }
   } catch {
     /* fall through to the original file */

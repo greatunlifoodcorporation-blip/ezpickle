@@ -206,7 +206,23 @@ export const pricingRuleSchema = z.object({
 
 export const settingsSchema = z.object({
   businessName: z.string().trim().min(1).max(60).optional(),
-  logoUrl: z.string().optional(),
+  // "" or the default means "use the built-in mark"; otherwise an upload or an https URL.
+  logoUrl: z
+    .string()
+    .max(500)
+    .refine((v) => v === "" || /^\/api\/files\/[a-z0-9]+$/i.test(v) || v === "/logo.png" || /^https:\/\//.test(v), {
+      message: "Logo must be an uploaded image or an https:// link.",
+    })
+    .optional(),
+  logoShowName: z.boolean().optional(),
+  heroLine1: z.string().trim().max(40).optional(),
+  heroLine2: z.string().trim().max(40).optional(),
+  heroAccent: z.string().trim().max(40).optional(),
+  heroSubtitle: z.string().trim().max(300).optional(),
+  facilityTitle: z.string().trim().max(80).optional(),
+  facilityDescription: z.string().trim().max(300).optional(),
+  courtsTitle: z.string().trim().max(80).optional(),
+  courtsDescription: z.string().trim().max(300).optional(),
   email: z.string().email().optional(),
   phone: z.string().trim().max(30).optional(),
   address: z.string().trim().max(200).optional(),

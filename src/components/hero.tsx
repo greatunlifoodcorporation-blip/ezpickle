@@ -7,7 +7,15 @@ import { Button } from "./ui/button";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-export function Hero() {
+export type HeroContent = {
+  line1: string;
+  line2: string;
+  accent: string;
+  subtitle: string;
+  stats: [string, string][];
+};
+
+export function Hero({ content }: { content: HeroContent }) {
   const reduced = useReducedMotion();
   const { scrollY } = useScroll();
   // Very small parallax: the background drifts slightly slower than the page.
@@ -53,16 +61,15 @@ export function Hero() {
           {...step(0.35)}
           className="mt-7 max-w-3xl text-[2.6rem] font-extrabold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl"
         >
-          Play Easy.
+          {content.line1}
           <br />
-          Play More.
+          {content.line2}
           <br />
-          <span className="text-pickle-500">Play EzPickle.</span>
+          <span className="text-pickle-500">{content.accent}</span>
         </motion.h1>
 
         <motion.p {...step(0.5)} className="mt-6 max-w-xl text-base leading-relaxed text-white/55 sm:text-lg">
-          Four championship courts, live availability, and Open Play nights that sort themselves out.
-          Reserve in under a minute and pay with GCash, Maya or card.
+          {content.subtitle}
         </motion.p>
 
         <motion.div {...step(0.65)} className="mt-9 flex flex-wrap items-center gap-3">
@@ -81,12 +88,7 @@ export function Hero() {
         </motion.div>
 
         <motion.dl {...step(0.8)} className="mt-14 grid max-w-2xl grid-cols-2 gap-6 sm:grid-cols-4">
-          {[
-            ["4", "Courts"],
-            ["6am–11pm", "Open daily"],
-            ["60s", "To book"],
-            ["₱400+", "Per hour"],
-          ].map(([value, label]) => (
+          {content.stats.map(([value, label]) => (
             <div key={label}>
               <dt className="text-xl font-bold text-pickle-400 sm:text-2xl">{value}</dt>
               <dd className="mt-0.5 text-xs uppercase tracking-wider text-white/40">{label}</dd>
