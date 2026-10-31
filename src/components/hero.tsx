@@ -15,7 +15,18 @@ export type HeroContent = {
   stats: [string, string][];
 };
 
-export function Hero({ content }: { content: HeroContent }) {
+const FALLBACK: HeroContent = {
+  line1: "Play Easy.",
+  line2: "Play More.",
+  accent: "Play EzPickle.",
+  subtitle:
+    "Live court availability, Open Play nights that sort themselves out. Reserve in under a minute and pay with GCash, Maya or card.",
+  stats: [["60s", "To book"]],
+};
+
+export function Hero({ content: given }: { content?: HeroContent }) {
+  // Never crash the home page if the content is missing or incomplete.
+  const content: HeroContent = { ...FALLBACK, ...(given ?? {}), stats: given?.stats ?? FALLBACK.stats };
   const reduced = useReducedMotion();
   const { scrollY } = useScroll();
   // Very small parallax: the background drifts slightly slower than the page.
