@@ -271,13 +271,13 @@ export function BookingWizard({
         </div>
 
         {loading ? (
-          <div className="space-y-4">
-            {[0, 1, 2].map((i) => (
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
+            {[0, 1, 2, 3].map((i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="h-4 w-28" />
-                <div className="flex gap-1.5">
-                  {Array.from({ length: 12 }).map((_, j) => (
-                    <Skeleton key={j} className="h-9 w-16" />
+                <div className="flex flex-col gap-1.5">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Skeleton key={j} className="h-9 w-full" />
                   ))}
                 </div>
               </div>
@@ -291,7 +291,7 @@ export function BookingWizard({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -12 }}
               transition={{ duration: 0.22 }}
-              className="space-y-5"
+              className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3"
             >
               {data?.courts.map((row) => {
                 const startable = row.slots.filter((s) =>
@@ -299,8 +299,8 @@ export function BookingWizard({
                 );
 
                 return (
-                  <div key={row.courtId}>
-                    <div className="mb-2 flex items-center gap-2">
+                  <div key={row.courtId} className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                    <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
                       <span className="text-sm font-semibold">{row.courtName}</span>
                       <span className="text-xs text-white/35">{peso(row.hourlyPrice)}/hr</span>
                       {startable.length === 0 && (
@@ -308,7 +308,7 @@ export function BookingWizard({
                       )}
                     </div>
 
-                    <div className="ezp-scroll -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1.5">
+                    <div className="ezp-scroll flex max-h-[26rem] flex-col gap-1.5 overflow-y-auto pr-1">
                       {row.slots
                         .filter((s) => s.state !== "PAST")
                         .map((slot) => {
@@ -332,7 +332,7 @@ export function BookingWizard({
                                 setStartMin(slot.startMin);
                               }}
                               className={cn(
-                                "relative shrink-0 rounded-lg border px-3 py-2 text-xs font-semibold transition",
+                                "relative w-full shrink-0 rounded-lg border px-3 py-2.5 text-center text-[13px] font-semibold transition",
                                 selected &&
                                   "border-pickle-500 bg-pickle-500 text-ink shadow-[0_0_22px_-6px_rgba(111,207,43,0.8)]",
                                 covered && !selected && "border-pickle-500/50 bg-pickle-500/20 text-white",

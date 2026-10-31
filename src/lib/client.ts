@@ -67,11 +67,15 @@ export function downloadCsv(blob: Blob, filename: string) {
 }
 
 /** Uploads an image Blob to the admin media endpoint and returns its public URL. */
-export async function uploadImage(file: Blob, filename = "photo.jpg"): Promise<string> {
+export async function uploadImage(
+  file: Blob,
+  filename = "photo.jpg",
+  endpoint = "/api/admin/media/upload",
+): Promise<string> {
   const form = new FormData();
   form.append("file", file, filename);
 
-  const res = await fetch("/api/admin/media/upload", {
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: { "x-csrf-token": csrfToken() },
     body: form,

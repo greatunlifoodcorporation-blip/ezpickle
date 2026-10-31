@@ -384,6 +384,9 @@ function validateBookingWindow(
   durationMins: number,
   settings: { minBookingMins: number; maxBookingMins: number; bookingIntervalMins: number },
 ) {
+  // The standard choices (1, 2, 3 and 4 hours) are always allowed.
+  if ([60, 120, 180, 240].includes(durationMins)) return;
+
   if (durationMins < settings.minBookingMins) {
     throw new AppError(
       `Minimum booking is ${settings.minBookingMins} minutes.`,
